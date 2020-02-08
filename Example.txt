@@ -4,11 +4,13 @@ Josh
 
 Cathleen
 14.01.2020
-Bread;2.40;Josh,George
+Bread;2.4;Josh,George
 Chocolate;1;Josh
 Water;2;George,Josh
 
 Josh
 13.01.2018
+Butter;3;Cathleen,George
+Honey;1;George,Cathleen
 Butter;3;Cathleen
-Honey;1;Josh
+Honey;1;George

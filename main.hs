@@ -1,8 +1,8 @@
-import File_Reader
+import Expense_Calc
 import System.Environment (getArgs)
 
 main = do
     [file] <-getArgs
     s <- readFile file
-    let test = expenses_state s
+    let test = print_expenses s "Josh"
     putStr $ show test
