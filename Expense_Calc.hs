@@ -3,24 +3,38 @@ module Expense_Calc where
 import File_Reader
 import Data.List.Split
 
-data Moneydiff = MoneydiffC [(String,Double)] deriving Show
-
 print_expenses ::  String -> String -> String
 print_expenses input user = let 
     ExpensesC(users,entries) = expenses_state input
-    positives = user_entries user entries [[]]
-    in if (user `elem` users) then show (calculate_positive user users positives) else "Enter a valid user!\n"
+    positives = calculate_positive user users (user_entries user entries [[]])
+    negatives = calculate_negative user entries positives
+    in if (user `elem` users) then show (calc_total positives negatives []) else "Enter a valid user!\n"
 
 
-calculate_positive :: String -> [String] -> [[String]] -> Moneydiff
+calculate_positive :: String -> [String] -> [[String]] -> [(String,Double)]
 calculate_positive user users entries = calculate_positive_aux user users entries [("",0)]
 
 
-calculate_positive_aux :: String -> [String] -> [[String]] -> [(String,Double)] -> Moneydiff
-calculate_positive_aux _ _ [] diff = MoneydiffC diff
+calculate_positive_aux :: String -> [String] -> [[String]] -> [(String,Double)] -> [(String,Double)]
+calculate_positive_aux _ _ [] diff = diff
 calculate_positive_aux user users entries (("",0):_) = calculate_positive_aux user users entries $ foldr (\x xs -> ((x,0.0):xs) ) [] (filter (\x -> x /= user) users)
 calculate_positive_aux user users ((_:price:us):xss) diff = calculate_positive_aux user users xss (map (\(x, y) -> if x `elem` (get_users (head us)) then (x,y + (read price :: Double) / fromIntegral (length (get_users (head us)))) else (x,y)) diff )
 
+calculate_negative :: String -> [[String]] -> [(String,Double)] -> [(String,Double)]
+calculate_negative user entries mon = let 
+    users = map (\(x,y) -> x) mon
+    items = map (\x -> (x,(user_entries x entries [[]]))) users
+    neg = map (\(x,y) -> (x,getValue user (calculate_positive x (user: users) y ))) items
+    in neg 
+
+calc_total :: [(String,Double)] -> [(String,Double)] -> [(String,Double)] -> [(String,Double)]
+calc_total [] [] res = res
+calc_total ((a,b):xs) ((c,d):ys) [] = calc_total xs ys [(a,(b-d))]
+calc_total ((a,b):xs) ((c,d):ys) res = calc_total xs ys ((a,(b-d)):res)
+
+
+getValue :: String -> [(String,Double)] -> Double
+getValue user ((x,y):xs) = if x == user then y else getValue user xs
 
 --gets all entries from a specific user
 user_entries :: String -> [[String]] -> [[String]] -> [[String]]
